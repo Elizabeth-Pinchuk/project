@@ -75,5 +75,10 @@ class Alien(Character):
             self.chasing()
         if distance <= self.attack_range:
             self.attack(self.player)
+class Object:
+    def __init__(self, pos, name, size):
+        self.name = name
+        self.pos = pos
+        self.size = size
 
 player1 = Player([0, 0], 'player 1')
