@@ -1,3 +1,6 @@
+import random
+
+
 class Character:
     max_hp = 100
     min_hp = 1
@@ -80,5 +83,12 @@ class Object:
         self.name = name
         self.pos = pos
         self.size = size
-
+class Map:
+    def __init__(self, color, object_quantity, screen_size):
+        self.color = color
+        self.object_quantity = object_quantity
+        self.screen_size = screen_size
+    def place_object(self):
+        x = random.randint(0, self.screen_size[0])
+        y = random.randint(0, self.screen_size[1])
 player1 = Player([0, 0], 'player 1')
