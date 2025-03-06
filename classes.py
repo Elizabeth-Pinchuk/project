@@ -31,6 +31,7 @@ class Character:
         if self.hp > self.max_hp:
             self.hp = self.max_hp
 
+
 class Player(Character):
     max_oxygen = 10
 
@@ -51,13 +52,13 @@ class Player(Character):
         print(f'My oxygen is {self.oxygen}/{self.max_oxygen}.')
         print(f'My cords {self.pos}.')
 
+
 class Alien(Character):
     def __init__(self, pos, name, spot_range, attack_range):
         super().__init__(pos, name)
         self.player = None
         self.spot_range = spot_range
         self.attack_range = attack_range
-
 
     def wait(self):
         ...
@@ -78,17 +79,54 @@ class Alien(Character):
             self.chasing()
         if distance <= self.attack_range:
             self.attack(self.player)
+
+
 class Object:
-    def __init__(self, pos, name, size):
-        self.name = name
+    def __init__(self, pos, size):
         self.pos = pos
         self.size = size
+
+
+class Rock(Object):
+    def __init__(self, pos, size, color):
+        super().__init__(pos, size)
+        self.color = color
+
+
+class Spaceship_part(Object):
+    def __init__(self, pos, size, color):
+        super().__init__(pos, size)
+        self.color = color
+
+
+class Base(Object):
+    def __init__(self, pos, size, color):
+        super().__init__(pos, size)
+        self.color = color
+
+
 class Map:
-    def __init__(self, color, object_quantity, screen_size):
+    blocks = None
+
+    def __init__(self, color, object_quantity, screen_size, map_size):
         self.color = color
         self.object_quantity = object_quantity
         self.screen_size = screen_size
+        self.generate_blocks(*map_size)
+
     def place_object(self):
         x = random.randint(0, self.screen_size[0])
         y = random.randint(0, self.screen_size[1])
+
+    def generate_blocks(self, width, height):
+        possible_values = ["floor"] * 60 + ["rock"] * 20 + ["spaceship part"] * 10 + ["alien"] * 10
+        self.blocks = [[random.choice(possible_values) for _ in range(width)] for _ in range(height)]
+        center_row = height // 2
+        center_col = width // 2
+        self.blocks[center_row - 1][center_col - 1] = "base"
+        self.blocks[center_row - 1][center_col] = "base"
+        self.blocks[center_row][center_col - 1] = "base"
+        self.blocks[center_row][center_col] = "base"
+
+
 player1 = Player([0, 0], 'player 1')
