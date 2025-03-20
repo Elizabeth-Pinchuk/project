@@ -113,10 +113,11 @@ class Map:
         self.object_quantity = object_quantity
         self.screen_size = screen_size
         self.generate_blocks(*map_size)
+        self.mini_map = self.blocks
+        self.create_blocks()
 
-    def place_object(self):
-        x = random.randint(0, self.screen_size[0])
-        y = random.randint(0, self.screen_size[1])
+    def place_object(self, x, y, object):
+        self.blocks[y][x] = object
 
     def generate_blocks(self, width, height):
         possible_values = ["floor"] * 60 + ["rock"] * 20 + ["spaceship part"] * 10 + ["alien"] * 10
@@ -128,5 +129,16 @@ class Map:
         self.blocks[center_row][center_col - 1] = "base"
         self.blocks[center_row][center_col] = "base"
 
+    def create_blocks(self):
+        for y in range(len(self.blocks)):
+            for x in range(len(self.blocks[y])):
+                if self.blocks[y][x] == 'rock':
+                    self.blocks[y][x] = Rock([x, y], ..., ...)
+                elif self.blocks[y][x] == 'spaceship part':
+                    self.blocks[y][x] = Spaceship_part([x, y], ..., ...)
+                elif self.blocks[y][x] == 'base':
+                    self.blocks[y][x] = Base([x, y], ..., ...)
+                elif self.blocks[y][x] == 'alien':
+                    self.blocks[y][x] = Alien([x, y], ..., ..., ...)
 
 player1 = Player([0, 0], 'player 1')

@@ -33,7 +33,7 @@ class Map_manager:
         for y in range(len(self.map_object.blocks)):
             for x in range(len(self.map_object.blocks[y])):
                 pg.draw.circle(self.canvas,
-                               colors[self.map_object.blocks[y][x]],
+                               colors[self.map_object.mini_map[y][x]],
                                (x * k, y * k),
                                5)
 
@@ -45,3 +45,9 @@ class Map_manager:
 
     def get_cell(self, x, y):
         return x / self.cell_size, y / self.cell_size
+
+    def set_objects_pos(self):
+        for y in range(len(self.map_object.blocks)):
+            for x in range(len(self.map_object.blocks[y])):
+                self.map_object.blocks[y][x].pos[0] *= self.cell_size
+                self.map_object.blocks[y][x].pos[1] *= self.cell_size
