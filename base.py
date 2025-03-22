@@ -4,7 +4,6 @@ import os
 import time
 import animations
 
-
 SIZE = WIDTH, HEIGHT = 600, 600
 all_sprites = pygame.sprite.Group()
 main_ = pygame.sprite.Group()
@@ -14,9 +13,7 @@ remain = pygame.sprite.Group()
 base = pygame.sprite.Group()
 WORLD_SIZE = 100
 FPS = 200
-Base_Activated = False
 Remains_amount = 50
-
 
 
 class Camera:
@@ -34,13 +31,13 @@ class Camera:
 
 
 class Tile(pygame.sprite.Sprite):
-    def __init__(self, sizes, texture, x, y, c_a,  *group):
+    def __init__(self, sizes, texture, x, y, c_a, *group):
         if c_a:
             super().__init__(*group, tiles_group)
         else:
             super().__init__(*group, tiles_group, water_tiles_group)
         self.image = pygame.Surface([sizes, sizes])
-        self.image.fill(texture)#После поменять на фоточку пжпжпжпж
+        self.image.fill(texture)  # После поменять на фоточку пжпжпжпж
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -50,6 +47,7 @@ class WORLD:
     def __init__(self):
         self.world = 'Savings1'
         self.tile = 50
+        self.Base_Activated = False
 
     def create_world(self):
         with open(self.world, 'w') as file:
@@ -62,7 +60,7 @@ class WORLD:
             level_map = [line.strip() for line in file]
         self.max_width = len(level_map[0])
         self.height = len(level_map)
-        self.level =  list(map(lambda x: list(map(int, x.split(';'))), level_map))
+        self.level = list(map(lambda x: list(map(int, x.split(';'))), level_map))
 
     def render(self):
         x, y = 0, 0
@@ -79,16 +77,19 @@ class WORLD:
 
 
 class Hero(pygame.sprite.Sprite):
-    def __init__(self, x, y, size, *group):
+    def __init__(self, x, y, size, world, *group):
         super().__init__(*group)
         self.surface = pygame.Surface(size, pygame.SRCALPHA)
         # self.image = pygame.image.load('12\\1.png')
         self.image = None
         self.rect = self.surface.get_rect()
         pygame.draw.rect(self.surface, (0, 0, 0), pygame.Rect(self.rect.x, self.rect.y, *size))
+        self.x = x
+        self.y = y
         self.rect.x = x
         self.rect.y = y
-        self.speed = 1.5#ВЫНЕСТИ В АРГУМЕНТЫ КОНСТРУКТОРА
+        self.world = world
+        self.speed = 1.5  # ВЫНЕСТИ В АРГУМЕНТЫ КОНСТРУКТОРА
         self.running = False
         self.anims = {
             'walk': animations.Animation(x, y, '12', size),
@@ -97,11 +98,10 @@ class Hero(pygame.sprite.Sprite):
         }
         self.anim = animations.Animation(x, y, '12', size)
 
-    def update(self):
-        global Base_Activated
-        key = pygame.key.get_pressed()
+    def input(self):
+        keys_pressed = pygame.key.get_pressed()
         v_x, v_y = 0, 0
-        if key[pygame.K_LSHIFT]:
+        if keys_pressed[pygame.K_LSHIFT]:
             self.speed = 2.3
             self.running = True
             self.anim.is_on = True
@@ -109,30 +109,37 @@ class Hero(pygame.sprite.Sprite):
             self.speed = 1.5
             self.running = False
             self.anim.is_on = False
-        if key[pygame.K_w] and not key[pygame.K_s]:
+        if keys_pressed[pygame.K_w] and not keys_pressed[pygame.K_s]:
             v_y = -1 * self.speed
-        elif not key[pygame.K_w] and key[pygame.K_s]:
+        if not keys_pressed[pygame.K_w] and keys_pressed[pygame.K_s]:
             v_y = 1 * self.speed
-        if key[pygame.K_d] and not key[pygame.K_a]:
+        if keys_pressed[pygame.K_d] and not keys_pressed[pygame.K_a]:
             v_x = 1 * self.speed
-        elif key[pygame.K_a] and not key[pygame.K_d]:
+        if not keys_pressed[pygame.K_d] and keys_pressed[pygame.K_a]:
             v_x = -1 * self.speed
-        self.rect = self.rect.move(v_x * self.speed,v_y * self.speed)
-        if pygame.sprite.spritecollideany(self, tiles_group):
-            while not pygame.sprite.spritecollideany(self, tiles_group):
-                self.rect = self.rect.move(-1 * v_x, -1 * v_y)
-        else:
-            self.rect = self.rect.move(-2 * v_x * self.speed, -2 * v_y * self.speed)
+        if keys_pressed[pygame.K_e] and not self.world.Base_Activated:
+            self.world.base = Base(self.rect.x, self.rect.y)
+            self.world.Base_Activated = True
+
+        return v_x, v_y
+
+    def move(self, v_x, v_y):
+        self.rect = self.rect.move(v_x * self.speed, v_y * self.speed)
+        # if pygame.sprite.spritecollideany(self, tiles_group):
+        #     while not pygame.sprite.spritecollideany(self, tiles_group):
+        #         self.rect = self.rect.move(-1 * v_x, -1 * v_y)
+        # else:
+        #     self.rect = self.rect.move(-2 * v_x * self.speed, -2 * v_y * self.speed)
         if pygame.sprite.spritecollideany(self, water_tiles_group):
             while pygame.sprite.spritecollideany(self, water_tiles_group):
                 self.rect = self.rect.move(-1 * v_x, -1 * v_y)
-        if key[pygame.K_e] and not Base_Activated:
-            base = Base(self.rect.x, self.rect.y)
-            Base_Activated = True
+
+    def update(self):
+        v_x, v_y = self.input()
+        self.move(v_x, v_y)
+
         self.anim.update()
         self.image = self.anim.image
-
-
 
 
 class Remains(pygame.sprite.Sprite):
@@ -142,12 +149,15 @@ class Remains(pygame.sprite.Sprite):
         self.image.fill('#752908')
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = x, y
+
+
 '''
 Обломки доделать
 
 
 
 '''
+
 
 class Base(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -156,6 +166,7 @@ class Base(pygame.sprite.Sprite):
         self.image.fill('#ba3c06')
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = x, y
+
 
 class Air:
     def __init__(self):
@@ -169,7 +180,6 @@ class Air:
             pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(40, 380, 40, self.h))
 
 
-
 def main():
     A = WORLD()
     camera = Camera()
@@ -181,7 +191,7 @@ def main():
     pygame.display.set_caption('*****')
     screen = pygame.display.set_mode(SIZE)
 
-    hero = Hero(300, 300, (30, 50), all_sprites, main_)
+    hero = Hero(300, 300, (30, 50), A, all_sprites, main_)
     a = Air()
 
     A.render()
@@ -220,28 +230,6 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 '''if key[pygame.K_w] and not key[pygame.K_s] and not key[pygame.K_d] and not key[pygame.K_a]:
             self.rect.y -= 8
