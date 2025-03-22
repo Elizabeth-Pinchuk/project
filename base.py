@@ -103,7 +103,7 @@ class Hero(pygame.sprite.Sprite):
         keys_pressed = pygame.key.get_pressed()
         v_x, v_y = 0, 0
         if keys_pressed[pygame.K_LSHIFT]:
-            self.speed = HERO_SPEED * 2
+            self.speed = HERO_SPEED * 1.5
             self.running = True
             self.anim.is_on = True
         else:
@@ -210,7 +210,10 @@ def main():
         screen.fill((255, 255, 255))
 
         if cur_time - n_time > 1:
-            a.oxygen -= 10
+            if a.oxygen > 0:
+                a.oxygen -= 10 + 10 * int(hero.running)
+            else:
+                a.h -= 10 + 10 * int(hero.running)
             n_time = time.time()
 
         main_.update()
