@@ -117,40 +117,48 @@ class Hero(pygame.sprite.Sprite):
             'attack': animations.Animation(x, y, 'sprites\\walk_down', size)
         }
         self.direction = "down"
-
-    def update(self):
-        global Base_Activated
-        global In_Base
-        key = pygame.key.get_pressed()
+    def input(self):
+        keys_pressed = pygame.key.get_pressed()
         v_x, v_y = 0, 0
-        if key[pygame.K_LSHIFT]:
-            self.speed = 2.3
+        if keys_pressed[pygame.K_LSHIFT]:
+            self.speed = HERO_SPEED * 1.5
             self.running = True
+            self.animations['walk_down'].is_on = True
         else:
-            self.speed = 1.5
+            self.speed = HERO_SPEED
             self.running = False
-        if key[pygame.K_w] and not key[pygame.K_s]:
+            self.anim.is_on = False
+        if keys_pressed[pygame.K_w] :
             v_y = -1 * self.speed
-        elif not key[pygame.K_w] and key[pygame.K_s]:
+        if keys_pressed[pygame.K_s]:
             v_y = 1 * self.speed
-        if key[pygame.K_d] and not key[pygame.K_a]:
+        if keys_pressed[pygame.K_d]:
             v_x = 1 * self.speed
-        elif key[pygame.K_a] and not key[pygame.K_d]:
+        if keys_pressed[pygame.K_a]:
             v_x = -1 * self.speed
-        self.rect = self.rect.move(v_x * self.speed,v_y * self.speed)
-        if pygame.sprite.spritecollideany(self, tiles_group):
-            while not pygame.sprite.spritecollideany(self, tiles_group):
-                self.rect = self.rect.move(-1 * v_x, -1 * v_y)
-        else:
-            self.rect = self.rect.move(-2 * v_x * self.speed, -2 * v_y * self.speed)
+        if keys_pressed[pygame.K_e] and not self.world.Base_Activated:
+            self.world.base = Base(self.rect.x, self.rect.y)
+            self.world.Base_Activated = True
+
+        return v_x, v_y
+
+    def move(self, v_x, v_y):
+        self.rect = self.rect.move(v_x * self.speed, v_y * self.speed)
+        # if pygame.sprite.spritecollideany(self, tiles_group):
+        #     while not pygame.sprite.spritecollideany(self, tiles_group):
+        #         self.rect = self.rect.move(-1 * v_x, -1 * v_y)
+        # else:
+        #     self.rect = self.rect.move(-2 * v_x * self.speed, -2 * v_y * self.speed)
         if pygame.sprite.spritecollideany(self, water_tiles_group):
             while pygame.sprite.spritecollideany(self, water_tiles_group):
                 self.rect = self.rect.move(-1 * v_x, -1 * v_y)
-        if key[pygame.K_e] and not Base_Activated:
-            self.base = Base(self.rect.x, self.rect.y)
-            Base_Activated = True
-        if pygame.sprite.spritecollideany(self, base) and key[pygame.K_e]:
-            In_Base = True
+
+    def update(self):
+        v_x, v_y = self.input()
+        self.move(v_x, v_y)
+        self.animations[f"walk_{self.direction}"].update()
+        self.image = self.animations[f"walk_{self.direction}"].image
+
 
 
 Amount = 0
