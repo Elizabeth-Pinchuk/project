@@ -3,6 +3,7 @@ import random
 import os
 import time
 import BaseWindow
+import animations
 
 SIZE = WIDTH, HEIGHT = 600, 600
 
@@ -24,6 +25,7 @@ FPS = 200
 Base_Activated = False
 Remains_amount = 50
 In_Base = False
+HERO_SPEED = 1
 
 
 
@@ -47,8 +49,8 @@ class Tile(pygame.sprite.Sprite):
             super().__init__(*group, tiles_group)
         else:
             super().__init__(*group, tiles_group, water_tiles_group)
-        self.image = pygame.Surface([sizes, sizes])
-        self.image.fill(texture)#После поменять на фоточку пжпжпжпж
+        self.surface = pygame.Surface([sizes, sizes])
+        self.image = pygame.transform.scale(texture, (sizes, sizes))
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -58,6 +60,8 @@ class WORLD:
     def __init__(self):
         self.world = 'Savings1'
         self.tile = 50
+        self.tiles = [pygame.image.load("sprites\\rock.png"),
+                      pygame.image.load("sprites\\puddle.png")]
 
     def create_world(self):
         with open(self.world, 'w') as file:
@@ -79,13 +83,13 @@ class WORLD:
         for line in self.level:
             for row in line:
                 if row:
-                    Tile(self.tile, pygame.Color('Green'), self.x, self.y, True, all_sprites)
+                    Tile(self.tile, self.tiles[0], self.x, self.y, True, all_sprites)
                     if row == 5:
                         if random.randint(0, 15) == 5:
                             remains = Remains(self.x + 10, self.y + 10)
                     self.x += self.tile
                 else:
-                    Tile(self.tile, pygame.Color('Blue'), self.x, self.y, False, all_sprites)
+                    Tile(self.tile, self.tiles[1], self.x, self.y, False, all_sprites)
                     self.x += self.tile
             self.x = 0
             self.y += self.tile
@@ -96,13 +100,23 @@ class Hero(pygame.sprite.Sprite):
         super().__init__(*group)
 
     def spawn(self, size, x, y, speed):
-        self.image = pygame.Surface(size, pygame.SRCALPHA)
+        self.surface = pygame.Surface(size, pygame.SRCALPHA)
+        self.image = None
         self.rect = self.image.get_rect()
         pygame.draw.rect(self.image, (0, 0, 0), pygame.Rect(self.rect.x, self.rect.y, *size))
         self.rect.x = x
         self.rect.y = y
         self.speed = speed
         self.running = False
+        self.animations = {
+            'walk_down': animations.Animation(x, y, 'sprites\\walk_down', size),
+            'walk_up': animations.Animation(x, y, 'sprites\\walk_up', size),
+            'walk_right': animations.Animation(x, y, 'sprites\\walk_right', size),
+            'walk_left': animations.Animation(x, y, 'sprites\\walk_left', size),
+            'run': animations.Animation(x, y, 'sprites\\walk_down', size),
+            'attack': animations.Animation(x, y, 'sprites\\walk_down', size)
+        }
+        self.direction = "down"
 
     def update(self):
         global Base_Activated
@@ -299,46 +313,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-'''if key[pygame.K_w] and not key[pygame.K_s] and not key[pygame.K_d] and not key[pygame.K_a]:
-            self.rect.y -= 8
-        elif key[pygame.K_s] and not key[pygame.K_w] and not key[pygame.K_d] and not key[pygame.K_a]:
-            self.rect.y += 8
-        elif key[pygame.K_d] and not key[pygame.K_w] and not key[pygame.K_s] and not key[pygame.K_a]:
-            self.rect.x += 8
-        elif key[pygame.K_a] and not key[pygame.K_w] and not key[pygame.K_d] and not key[pygame.K_s]:
-            self.rect.x -= 8
-        elif key[pygame.K_w] and not key[pygame.K_s] and key[pygame.K_d] and not key[pygame.K_a]:
-            self.rect.x += 4 * round(2 ** 0.5, 2)
-            self.rect.y -= 4 * round(2 ** 0.5, 2)
-        elif key[pygame.K_w] and not key[pygame.K_s] and not key[pygame.K_d] and key[pygame.K_a]:
-            self.rect.x -= 4 * round(2 ** 0.5, 2)
-            self.rect.y -= 4 * round(2 ** 0.5, 2)
-        elif not key[pygame.K_w] and key[pygame.K_s] and not key[pygame.K_d] and key[pygame.K_a]:
-            self.rect.x -= 4 * round(2 ** 0.5, 2)
-            self.rect.y += 4 * round(2 ** 0.5, 2)
-        elif not key[pygame.K_w] and key[pygame.K_s] and key[pygame.K_d] and not key[pygame.K_a]:
-            self.rect.x += 4 * round(2 ** 0.5, 2)
-            self.rect.y += 4 * round(2 ** 0.5, 2)'''
