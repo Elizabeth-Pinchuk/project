@@ -13,9 +13,8 @@ remain = pygame.sprite.Group()
 base = pygame.sprite.Group()
 WORLD_SIZE = 100
 FPS = 200
-Base_Activated = False
 Remains_amount = 50
-
+HERO_SPEED = 1
 
 class Camera:
     def __init__(self):
@@ -37,6 +36,7 @@ class Tile(pygame.sprite.Sprite):
             super().__init__(*group, tiles_group)
         else:
             super().__init__(*group, tiles_group, water_tiles_group)
+
         self.surface = pygame.Surface([sizes, sizes])
         self.image = pygame.transform.scale(texture, (sizes, sizes))  # После поменять на фоточку пжпжпжпж
         self.rect = self.image.get_rect()
@@ -48,6 +48,7 @@ class WORLD:
     def __init__(self):
         self.world = 'Savings1'
         self.tile = 50
+
         self.tiles = [pygame.image.load("sprites\\rock.png"),
                       pygame.image.load("sprites\\puddle.png")]
 
@@ -79,16 +80,19 @@ class WORLD:
 
 
 class Hero(pygame.sprite.Sprite):
-    def __init__(self, x, y, size, *group):
+    def __init__(self, x, y, size, world, *group):
         super().__init__(*group)
         self.surface = pygame.Surface(size, pygame.SRCALPHA)
         # self.image = pygame.image.load('sprites\\1.png')
         self.image = None
         self.rect = self.surface.get_rect()
         pygame.draw.rect(self.surface, (0, 0, 0), pygame.Rect(self.rect.x, self.rect.y, *size))
+        self.x = x
+        self.y = y
         self.rect.x = x
         self.rect.y = y
-        self.speed = 1.5  # ВЫНЕСТИ В АРГУМЕНТЫ КОНСТРУКТОРА
+        self.world = world
+        self.speed = HERO_SPEED
         self.running = False
         self.animations = {
             'walk_down': animations.Animation(x, y, 'sprites\\walk_down', size),
@@ -101,17 +105,48 @@ class Hero(pygame.sprite.Sprite):
         self.direction = "down"
         # self.anim = animations.Animation(x, y, 'sprites', size)
 
-    def update(self):
-        global Base_Activated
-        key = pygame.key.get_pressed()
+    def input(self):
+        keys_pressed = pygame.key.get_pressed()
         v_x, v_y = 0, 0
-        if key[pygame.K_LSHIFT]:
-            self.speed = 2.3
+        if keys_pressed[pygame.K_LSHIFT]:
+            self.speed = HERO_SPEED * 1.5
             self.running = True
             self.animations['walk_down'].is_on = True
         else:
-            self.speed = 1.5
+            self.speed = HERO_SPEED
             self.running = False
+            self.anim.is_on = False
+        if keys_pressed[pygame.K_w] :
+            v_y = -1 * self.speed
+        if keys_pressed[pygame.K_s]:
+            v_y = 1 * self.speed
+        if keys_pressed[pygame.K_d]:
+            v_x = 1 * self.speed
+        if keys_pressed[pygame.K_a]:
+            v_x = -1 * self.speed
+        if keys_pressed[pygame.K_e] and not self.world.Base_Activated:
+            self.world.base = Base(self.rect.x, self.rect.y)
+            self.world.Base_Activated = True
+
+        return v_x, v_y
+
+    def move(self, v_x, v_y):
+        self.rect = self.rect.move(v_x * self.speed, v_y * self.speed)
+        # if pygame.sprite.spritecollideany(self, tiles_group):
+        #     while not pygame.sprite.spritecollideany(self, tiles_group):
+        #         self.rect = self.rect.move(-1 * v_x, -1 * v_y)
+        # else:
+        #     self.rect = self.rect.move(-2 * v_x * self.speed, -2 * v_y * self.speed)
+        if pygame.sprite.spritecollideany(self, water_tiles_group):
+            while pygame.sprite.spritecollideany(self, water_tiles_group):
+                self.rect = self.rect.move(-1 * v_x, -1 * v_y)
+
+    def update(self):
+        v_x, v_y = self.input()
+        self.move(v_x, v_y)
+
+        self.anim.update()
+        self.image = self.anim.image
             self.animations['walk_down'].is_on = False
         if key[pygame.K_w] and not key[pygame.K_s]:
             v_y = -1 * self.speed
@@ -190,7 +225,7 @@ def main():
     pygame.display.set_caption('*****')
     screen = pygame.display.set_mode(SIZE)
 
-    hero = Hero(300, 300, (30, 50), all_sprites, main_)
+    hero = Hero(300, 300, (30, 50), A, all_sprites, main_)
     a = Air()
 
     A.render()
@@ -203,51 +238,35 @@ def main():
             if event.type == pygame.QUIT:
                 run = False
 
-            cur_time = time.time()
+        cur_time = time.time()
 
-            screen.fill((255, 255, 255))
+        screen.fill((255, 255, 255))
 
-            if cur_time - n_time > 1:
-                a.oxygen -= 10
-                n_time = time.time()
+        if cur_time - n_time > 1:
+            if a.oxygen > 0:
+                a.oxygen -= 10 + 10 * int(hero.running)
+            else:
+                a.h -= 10 + 10 * int(hero.running)
+            n_time = time.time()
 
-            main_.update()
-            camera.update(hero)
+        main_.update()
+        camera.update(hero)
 
-            for sprite in all_sprites:
-                camera.apply(sprite)
+        for sprite in all_sprites:
+            camera.apply(sprite)
 
-            all_sprites.draw(screen)
-            main_.draw(screen)
+        all_sprites.draw(screen)
+        main_.draw(screen)
 
-            a.render(screen)
+        a.render(screen)
 
-            pygame.display.flip()
-            timer.tick(FPS)
+        pygame.display.flip()
+        pygame.display.update()
+        timer.tick(FPS)
     pygame.quit()
 
 
 if __name__ == '__main__':
     main()
 
-'''if key[pygame.K_w] and not key[pygame.K_s] and not key[pygame.K_d] and not key[pygame.K_a]:
-            self.rect.y -= 8
-        elif key[pygame.K_s] and not key[pygame.K_w] and not key[pygame.K_d] and not key[pygame.K_a]:
-            self.rect.y += 8
-        elif key[pygame.K_d] and not key[pygame.K_w] and not key[pygame.K_s] and not key[pygame.K_a]:
-            self.rect.x += 8
-        elif key[pygame.K_a] and not key[pygame.K_w] and not key[pygame.K_d] and not key[pygame.K_s]:
-            self.rect.x -= 8
-        elif key[pygame.K_w] and not key[pygame.K_s] and key[pygame.K_d] and not key[pygame.K_a]:
-            self.rect.x += 4 * round(2 ** 0.5, 2)
-            self.rect.y -= 4 * round(2 ** 0.5, 2)
-        elif key[pygame.K_w] and not key[pygame.K_s] and not key[pygame.K_d] and key[pygame.K_a]:
-            self.rect.x -= 4 * round(2 ** 0.5, 2)
-            self.rect.y -= 4 * round(2 ** 0.5, 2)
-        elif not key[pygame.K_w] and key[pygame.K_s] and not key[pygame.K_d] and key[pygame.K_a]:
-            self.rect.x -= 4 * round(2 ** 0.5, 2)
-            self.rect.y += 4 * round(2 ** 0.5, 2)
-        elif not key[pygame.K_w] and key[pygame.K_s] and key[pygame.K_d] and not key[pygame.K_a]:
-            self.rect.x += 4 * round(2 ** 0.5, 2)
-            self.rect.y += 4 * round(2 ** 0.5, 2)'''
 
