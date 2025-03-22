@@ -16,7 +16,6 @@ FPS = 200
 Remains_amount = 50
 HERO_SPEED = 1
 
-
 class Camera:
     def __init__(self):
         self.dx = 0
@@ -37,8 +36,9 @@ class Tile(pygame.sprite.Sprite):
             super().__init__(*group, tiles_group)
         else:
             super().__init__(*group, tiles_group, water_tiles_group)
-        self.image = pygame.Surface([sizes, sizes])
-        self.image.fill(texture)  # После поменять на фоточку пжпжпжпж
+
+        self.surface = pygame.Surface([sizes, sizes])
+        self.image = pygame.transform.scale(texture, (sizes, sizes))  # После поменять на фоточку пжпжпжпж
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -48,7 +48,9 @@ class WORLD:
     def __init__(self):
         self.world = 'Savings1'
         self.tile = 50
-        self.Base_Activated = False
+
+        self.tiles = [pygame.image.load("sprites\\rock.png"),
+                      pygame.image.load("sprites\\puddle.png")]
 
     def create_world(self):
         with open(self.world, 'w') as file:
@@ -68,10 +70,10 @@ class WORLD:
         for line in self.level:
             for row in line:
                 if row:
-                    Tile(self.tile, pygame.Color('Green'), x, y, True, all_sprites)
+                    Tile(self.tile, self.tiles[0], x, y, True, all_sprites)
                     x += self.tile
                 else:
-                    Tile(self.tile, pygame.Color('Blue'), x, y, False, all_sprites)
+                    Tile(self.tile, self.tiles[1], x, y, False, all_sprites)
                     x += self.tile
             x = 0
             y += self.tile
@@ -81,7 +83,7 @@ class Hero(pygame.sprite.Sprite):
     def __init__(self, x, y, size, world, *group):
         super().__init__(*group)
         self.surface = pygame.Surface(size, pygame.SRCALPHA)
-        # self.image = pygame.image.load('12\\1.png')
+        # self.image = pygame.image.load('sprites\\1.png')
         self.image = None
         self.rect = self.surface.get_rect()
         pygame.draw.rect(self.surface, (0, 0, 0), pygame.Rect(self.rect.x, self.rect.y, *size))
@@ -92,12 +94,16 @@ class Hero(pygame.sprite.Sprite):
         self.world = world
         self.speed = HERO_SPEED
         self.running = False
-        self.anims = {
-            'walk': animations.Animation(x, y, '12', size),
-            'run': animations.Animation(x, y, '12', size),
-            'attack': animations.Animation(x, y, '12', size)
+        self.animations = {
+            'walk_down': animations.Animation(x, y, 'sprites\\walk_down', size),
+            'walk_up': animations.Animation(x, y, 'sprites\\walk_up', size),
+            'walk_right': animations.Animation(x, y, 'sprites\\walk_right', size),
+            'walk_left': animations.Animation(x, y, 'sprites\\walk_left', size),
+            'run': animations.Animation(x, y, 'sprites\\walk_down', size),
+            'attack': animations.Animation(x, y, 'sprites\\walk_down', size)
         }
-        self.anim = animations.Animation(x, y, '12', size)
+        self.direction = "down"
+        # self.anim = animations.Animation(x, y, 'sprites', size)
 
     def input(self):
         keys_pressed = pygame.key.get_pressed()
@@ -105,7 +111,7 @@ class Hero(pygame.sprite.Sprite):
         if keys_pressed[pygame.K_LSHIFT]:
             self.speed = HERO_SPEED * 1.5
             self.running = True
-            self.anim.is_on = True
+            self.animations['walk_down'].is_on = True
         else:
             self.speed = HERO_SPEED
             self.running = False
@@ -141,6 +147,33 @@ class Hero(pygame.sprite.Sprite):
 
         self.anim.update()
         self.image = self.anim.image
+            self.animations['walk_down'].is_on = False
+        if key[pygame.K_w] and not key[pygame.K_s]:
+            v_y = -1 * self.speed
+            self.direction = "up"
+        elif not key[pygame.K_w] and key[pygame.K_s]:
+            v_y = 1 * self.speed
+            self.direction = "down"
+        if key[pygame.K_d] and not key[pygame.K_a]:
+            v_x = 1 * self.speed
+            self.direction = "right"
+        elif key[pygame.K_a] and not key[pygame.K_d]:
+            v_x = -1 * self.speed
+            self.direction = "left"
+        self.rect = self.rect.move(v_x * self.speed, v_y * self.speed)
+        if pygame.sprite.spritecollideany(self, tiles_group):
+            while not pygame.sprite.spritecollideany(self, tiles_group):
+                self.rect = self.rect.move(-1 * v_x, -1 * v_y)
+        else:
+            self.rect = self.rect.move(-2 * v_x * self.speed, -2 * v_y * self.speed)
+        if pygame.sprite.spritecollideany(self, water_tiles_group):
+            while pygame.sprite.spritecollideany(self, water_tiles_group):
+                self.rect = self.rect.move(-1 * v_x, -1 * v_y)
+        if key[pygame.K_e] and not Base_Activated:
+            base = Base(self.rect.x, self.rect.y)
+            Base_Activated = True
+        self.animations[f"walk_{self.direction}"].update()
+        self.image = self.animations[f"walk_{self.direction}"].image
 
 
 class Remains(pygame.sprite.Sprite):
@@ -236,23 +269,4 @@ def main():
 if __name__ == '__main__':
     main()
 
-'''if key[pygame.K_w] and not key[pygame.K_s] and not key[pygame.K_d] and not key[pygame.K_a]:
-            self.rect.y -= 8
-        elif key[pygame.K_s] and not key[pygame.K_w] and not key[pygame.K_d] and not key[pygame.K_a]:
-            self.rect.y += 8
-        elif key[pygame.K_d] and not key[pygame.K_w] and not key[pygame.K_s] and not key[pygame.K_a]:
-            self.rect.x += 8
-        elif key[pygame.K_a] and not key[pygame.K_w] and not key[pygame.K_d] and not key[pygame.K_s]:
-            self.rect.x -= 8
-        elif key[pygame.K_w] and not key[pygame.K_s] and key[pygame.K_d] and not key[pygame.K_a]:
-            self.rect.x += 4 * round(2 ** 0.5, 2)
-            self.rect.y -= 4 * round(2 ** 0.5, 2)
-        elif key[pygame.K_w] and not key[pygame.K_s] and not key[pygame.K_d] and key[pygame.K_a]:
-            self.rect.x -= 4 * round(2 ** 0.5, 2)
-            self.rect.y -= 4 * round(2 ** 0.5, 2)
-        elif not key[pygame.K_w] and key[pygame.K_s] and not key[pygame.K_d] and key[pygame.K_a]:
-            self.rect.x -= 4 * round(2 ** 0.5, 2)
-            self.rect.y += 4 * round(2 ** 0.5, 2)
-        elif not key[pygame.K_w] and key[pygame.K_s] and key[pygame.K_d] and not key[pygame.K_a]:
-            self.rect.x += 4 * round(2 ** 0.5, 2)
-            self.rect.y += 4 * round(2 ** 0.5, 2)'''
+
