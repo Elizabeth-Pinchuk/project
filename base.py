@@ -250,3 +250,4 @@ if __name__ == '__main__':
         elif not key[pygame.K_w] and key[pygame.K_s] and key[pygame.K_d] and not key[pygame.K_a]:
             self.rect.x += 4 * round(2 ** 0.5, 2)
             self.rect.y += 4 * round(2 ** 0.5, 2)'''
+
