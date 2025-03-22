@@ -14,6 +14,7 @@ base = pygame.sprite.Group()
 WORLD_SIZE = 100
 FPS = 200
 Remains_amount = 50
+HERO_SPEED = 1
 
 
 class Camera:
@@ -89,7 +90,7 @@ class Hero(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
         self.world = world
-        self.speed = 1.5  # ВЫНЕСТИ В АРГУМЕНТЫ КОНСТРУКТОРА
+        self.speed = HERO_SPEED
         self.running = False
         self.anims = {
             'walk': animations.Animation(x, y, '12', size),
@@ -102,20 +103,20 @@ class Hero(pygame.sprite.Sprite):
         keys_pressed = pygame.key.get_pressed()
         v_x, v_y = 0, 0
         if keys_pressed[pygame.K_LSHIFT]:
-            self.speed = 2.3
+            self.speed = HERO_SPEED * 2
             self.running = True
             self.anim.is_on = True
         else:
-            self.speed = 1.5
+            self.speed = HERO_SPEED
             self.running = False
             self.anim.is_on = False
-        if keys_pressed[pygame.K_w] and not keys_pressed[pygame.K_s]:
+        if keys_pressed[pygame.K_w] :
             v_y = -1 * self.speed
-        if not keys_pressed[pygame.K_w] and keys_pressed[pygame.K_s]:
+        if keys_pressed[pygame.K_s]:
             v_y = 1 * self.speed
-        if keys_pressed[pygame.K_d] and not keys_pressed[pygame.K_a]:
+        if keys_pressed[pygame.K_d]:
             v_x = 1 * self.speed
-        if not keys_pressed[pygame.K_d] and keys_pressed[pygame.K_a]:
+        if keys_pressed[pygame.K_a]:
             v_x = -1 * self.speed
         if keys_pressed[pygame.K_e] and not self.world.Base_Activated:
             self.world.base = Base(self.rect.x, self.rect.y)
@@ -204,27 +205,28 @@ def main():
             if event.type == pygame.QUIT:
                 run = False
 
-            cur_time = time.time()
+        cur_time = time.time()
 
-            screen.fill((255, 255, 255))
+        screen.fill((255, 255, 255))
 
-            if cur_time - n_time > 1:
-                a.oxygen -= 10
-                n_time = time.time()
+        if cur_time - n_time > 1:
+            a.oxygen -= 10
+            n_time = time.time()
 
-            main_.update()
-            camera.update(hero)
+        main_.update()
+        camera.update(hero)
 
-            for sprite in all_sprites:
-                camera.apply(sprite)
+        for sprite in all_sprites:
+            camera.apply(sprite)
 
-            all_sprites.draw(screen)
-            main_.draw(screen)
+        all_sprites.draw(screen)
+        main_.draw(screen)
 
-            a.render(screen)
+        a.render(screen)
 
-            pygame.display.flip()
-            timer.tick(FPS)
+        pygame.display.flip()
+        pygame.display.update()
+        timer.tick(FPS)
     pygame.quit()
 
 
