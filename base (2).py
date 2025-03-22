@@ -49,8 +49,8 @@ class Tile(pygame.sprite.Sprite):
             super().__init__(*group, tiles_group)
         else:
             super().__init__(*group, tiles_group, water_tiles_group)
-        self.surface = pygame.Surface([sizes, sizes])
-        self.image = pygame.transform.scale(texture, (sizes, sizes))
+        self.surface = pygame.Surface(sizes)
+        self.image = pygame.transform.scale(texture, sizes)
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -62,6 +62,7 @@ class WORLD:
         self.tile = 50
         self.tiles = [pygame.image.load("sprites\\rock.png"),
                       pygame.image.load("sprites\\puddle.png")]
+        self.Base_Activated = False
 
     def create_world(self):
         with open(self.world, 'w') as file:
@@ -83,30 +84,29 @@ class WORLD:
         for line in self.level:
             for row in line:
                 if row:
-                    Tile(self.tile, self.tiles[0], self.x, self.y, True, all_sprites)
+                    Tile((self.tile, self.tile), self.tiles[0], self.x, self.y, True, all_sprites)
                     if row == 5:
                         if random.randint(0, 15) == 5:
                             remains = Remains(self.x + 10, self.y + 10)
                     self.x += self.tile
                 else:
-                    Tile(self.tile, self.tiles[1], self.x, self.y, False, all_sprites)
+                    Tile((self.tile, self.tile), self.tiles[1], self.x, self.y, False, all_sprites)
                     self.x += self.tile
             self.x = 0
             self.y += self.tile
 
 
 class Hero(pygame.sprite.Sprite):
-    def __init__(self, *group):
+    def __init__(self, x, y, size, world, *group):
         super().__init__(*group)
-
-    def spawn(self, size, x, y, speed):
         self.surface = pygame.Surface(size, pygame.SRCALPHA)
         self.image = None
-        self.rect = self.image.get_rect()
-        pygame.draw.rect(self.image, (0, 0, 0), pygame.Rect(self.rect.x, self.rect.y, *size))
+        self.rect = self.surface.get_rect()
+        pygame.draw.rect(self.surface, (0, 0, 0), pygame.Rect(self.rect.x, self.rect.y, *size))
         self.rect.x = x
         self.rect.y = y
-        self.speed = speed
+        self.speed = HERO_SPEED
+        self.world = world
         self.running = False
         self.animations = {
             'walk_down': animations.Animation(x, y, 'sprites\\walk_down', size),
@@ -127,7 +127,7 @@ class Hero(pygame.sprite.Sprite):
         else:
             self.speed = HERO_SPEED
             self.running = False
-            self.anim.is_on = False
+            self.animations['walk_down'].is_on = False
         if keys_pressed[pygame.K_w] :
             v_y = -1 * self.speed
         if keys_pressed[pygame.K_s]:
@@ -245,13 +245,12 @@ def main():
     pygame.init()
     pygame.display.set_caption('*****')
     screen = pygame.display.set_mode(SIZE)
-    hero = Hero(all_sprites, main_)
+    hero = Hero(300, 300, (30, 40), A, all_sprites, main_)
     Base = BaseWindow.Window(base_window)
     a = Air()
     hp = HP()
 
     A.render()
-    hero.spawn((30, 40), 300, 300, 2)
     run = True
     timer = pygame.time.Clock()
     n_time = time.time()
