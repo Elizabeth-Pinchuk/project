@@ -99,15 +99,31 @@ class WORLD:
 
 
 class NPC(pygame.sprite.Sprite):
-    def __init__(self, x, y, hero):
+    def __init__(self, x, y, hero, size):
         super().__init__(alien)
-        self.image = pygame.image.load("sprites\\walk_left\\1_left.png")
+        # self.image = pygame.image.load("sprites\\npc_walk_left\\")
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
         self.speed = 2
+        self.attack = False
         self.hero = hero
         self.hp = 0  # dfghj
+        self.animations = {
+            'npc_walk_right': animations.Animation(x, y, 'sprites\\npc_walk_right', size),
+            'npc_walk_left': animations.Animation(x, y, 'sprites\\npc_walk_left', size),
+            'npc_left_attack': animations.Animation(x, y, 'sprites\\npc_left_attack.png', size),
+            'npc_right_attack': animations.Animation(x, y, 'sprites\\npc_right_attack.png', size)
+        }
+        self.direction = "left"
+
+    def update(self):
+        if self.attack:
+            self.animations[f'npc_{self.direction}_attack'].update()
+            self.image = self.animations[f"npc_{self.direction}_attack"].image
+        else:
+            self.animations[f"npc_walk_{self.direction}"].update()
+            self.image = self.animations[f"npc_walk_{self.direction}"].image
 
     def move(self):
         if self.rect.x < self.hero.rect.x - 20:
