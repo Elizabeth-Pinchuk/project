@@ -5,7 +5,6 @@ import time
 import BaseWindow
 import animations
 
-
 SIZE = WIDTH, HEIGHT = 600, 600
 
 all_sprites = pygame.sprite.Group()
@@ -13,10 +12,12 @@ main_ = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 water_tiles_group = pygame.sprite.Group()
 remain = pygame.sprite.Group()
+alien = pygame.sprite.Group()
 base = pygame.sprite.Group()
 base_window = pygame.sprite.Group()
 base_button_w = pygame.sprite.Group()
-remains_sprites = []  # заполнить список pygame.image.load(адрес картинки с обломком)
+remains_sprites = [pygame.image.load(f'sprites\\remains\\{file}') for file in os.listdir("sprites\\remains")]
+rock_sprites = [pygame.image.load(f'sprites\\rocks\\{file}') for file in os.listdir("sprites\\rocks")]
 Level = BaseWindow.LEVEL
 REQUIREMENT = BaseWindow.REQUIREMENT
 WORLD_SIZE = 200
@@ -58,8 +59,8 @@ class WORLD:
     def __init__(self):
         self.world = 'Savings1'
         self.tile = 50
-        self.tiles = [pygame.image.load("sprites\\rock.png"),
-                      pygame.image.load("sprites\\puddle.png")]
+        self.tiles = [pygame.image.load("sprites\\floor_tile.png")]
+        self.rock_tiles = rock_sprites
         self.Base_Activated = False
 
     def create_world(self):
@@ -78,6 +79,7 @@ class WORLD:
         self.level = list(map(lambda x: list(map(int, x.split(';'))), level_map))
 
     def render(self):
+        global player
         self.x, self.y = 0, 0
         for line in self.level:
             for row in line:
@@ -86,41 +88,46 @@ class WORLD:
                     if row == 5:
                         if random.randint(0, 15) == 5:
                             remains = Remains(self.x + 10, self.y + 10)
+                        if random.randint(0, 10) == 5:
+                            npc = NPC(self.x, self.y, player)
                     self.x += self.tile
                 else:
-                    Tile((self.tile, self.tile), self.tiles[1], self.x, self.y, False, all_sprites)
+                    Tile((self.tile, self.tile), random.choice(self.rock_tiles), self.x, self.y, False, all_sprites)
                     self.x += self.tile
             self.x = 0
             self.y += self.tile
 
-class NPC(pygame.sprite.Sprite):
-    def __init__(self, screen_width, screen_height, hero):
-        super().__init__()
-        self.image = pygame.image.load("npc.png") # Заменить на своё изображение
-        self.rect = self.image.get_rect()
-        self.rect.x = random.randrange(0, screen_width - self.rect.width)
-        self.rect.y = random.randrange(0, screen_height - self.rect.height)
-        self.speed = 1
-        self.hero = hero
 
-    def update(self):
-        #движение к Hero
-        if self.rect.x < self.hero.rect.x:
+class NPC(pygame.sprite.Sprite):
+    def __init__(self, x, y, hero):
+        super().__init__(alien)
+        self.image = pygame.image.load("sprites\\walk_left\\1_left.png")
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.speed = 2
+        self.hero = hero
+        self.hp = 0  # dfghj
+
+    def move(self):
+        if self.rect.x < self.hero.rect.x - 20:
             self.rect.x += self.speed
-        if self.rect.x > self.hero.rect.x:
+        if self.rect.x > self.hero.rect.x - 20:
             self.rect.x -= self.speed
-        if self.rect.y < self.hero.rect.y:
+        if self.rect.y < self.hero.rect.y - 20:
             self.rect.y += self.speed
-        if self.rect.y > self.hero.rect.y:
+        if self.rect.y > self.hero.rect.y - 20:
             self.rect.y -= self.speed
 
-        # Проверка столкновения и уменьшение HP героя
-        if self.rect.colliderect(self.hero.rect):
+    def check(self):
+        if abs(self.rect.x - self.hero.rect.x) < 75 and abs(self.rect.x - self.hero.rect.x) < 75:
+            self.move()
+        if pygame.sprite.spritecollideany(self, main_):
             self.hero.hp -= 1
 
 
 class Hero(pygame.sprite.Sprite):
-    def __init__(self, x, y, size, world, *group):
+    def __init__(self, x, y, size, world, hp, *group):
         super().__init__(*group)
         self.surface = pygame.Surface(size, pygame.SRCALPHA)
         self.image = None
@@ -128,19 +135,18 @@ class Hero(pygame.sprite.Sprite):
         pygame.draw.rect(self.surface, (0, 0, 0), pygame.Rect(self.rect.x, self.rect.y, *size))
         self.rect.x = x
         self.rect.y = y
+        self.hp = hp
         self.speed = HERO_SPEED
         self.world = world
         self.attack = False
         self.running = False
         self.animations = {
-            'walk_down': animations.Animation(x, y, 'sprites\\walk_down', size),
-            'walk_up': animations.Animation(x, y, 'sprites\\walk_up', size),
             'walk_right': animations.Animation(x, y, 'sprites\\walk_right', size),
             'walk_left': animations.Animation(x, y, 'sprites\\walk_left', size),
-            'run': animations.Animation(x, y, 'sprites\\walk_down', size),
-            'attack': animations.Animation(x, y, 'sprites\\walk_down', size)
+            'attack_left': animations.Animation(x, y, 'sprites\\attack_left', size),
+            'attack_right': animations.Animation(x, y, 'sprites\\attack_right', size)
         }
-        self.direction = "down"
+        self.direction = "left"
 
     def input(self):
         global In_Base
@@ -148,10 +154,9 @@ class Hero(pygame.sprite.Sprite):
         v_x, v_y = 0, 0
         if keys_pressed[pygame.K_SPACE]:
             self.attack = True
-            self.image = self.attack_image
+            self.image = self.animations[f'attack_{self.direction}']
         else:
             self.attack = False
-            self.image = pygame.image.load("hero.png")
         if keys_pressed[pygame.K_LSHIFT]:
             self.speed = HERO_SPEED * 1.5
             self.running = True
@@ -160,10 +165,8 @@ class Hero(pygame.sprite.Sprite):
             self.running = False
         if keys_pressed[pygame.K_w]:
             v_y = -1 * self.speed
-            self.direction = 'up'
         if keys_pressed[pygame.K_s]:
             v_y = 1 * self.speed
-            self.direction = 'down'
         if keys_pressed[pygame.K_d]:
             v_x = 1 * self.speed
             self.direction = 'right'
@@ -196,9 +199,12 @@ class Hero(pygame.sprite.Sprite):
     def update(self):
         v_x, v_y = self.input()
         self.move(v_x, v_y)
-        self.animations[f"walk_{self.direction}"].update()
-        self.image = self.animations[f"walk_{self.direction}"].image
-
+        if self.attack:
+            self.animations[f'attack_{self.direction}'].update()
+            self.image = self.animations[f"attack_{self.direction}"].image
+        else:
+            self.animations[f"walk_{self.direction}"].update()
+            self.image = self.animations[f"walk_{self.direction}"].image
 
 
 Amount = 0
@@ -208,7 +214,7 @@ class Remains(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__(remain)
         self.image = pygame.Surface([20, 20])
-        self.image.fill('#752908')  # изменить на self.transform.scale((размер по х и у))
+        self.image = pygame.transform.scale(random.choice(remains_sprites), [35, 35])
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = x, y
         self.k = False
@@ -228,7 +234,7 @@ class Base(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__(all_sprites, base)
         self.image = pygame.Surface([50, 50])
-        self.image.fill('#ba3c06')
+        self.image.fill('#ba3c06')  # pygame.transform.scale(изображение, (размер x, размер_y))
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = x, y
 
@@ -257,9 +263,13 @@ class Air:
 
 class HP:
     def __init__(self):
-        self.hp = 2000
+        self.hp = 200
         self.h = 200
         self.m_hp = self.hp
+
+    def __sub__(self, other):
+        self.hp -= other * 100
+        return self.hp
 
     def render(self, screen):
         if self.hp > 0:
@@ -289,10 +299,12 @@ def main():
     pygame.init()
     pygame.display.set_caption('*****')
     screen = pygame.display.set_mode(SIZE)
-    hero = Hero(300, 300, (30, 40), A, all_sprites, main_)
+    hp = HP()
+    hero = Hero(300, 300, (30, 40), A, hp, all_sprites, main_)
+    global player
+    player = hero
     Base = BaseWindow.Window(base_window)
     a = Air()
-    hp = HP()
 
     A.render()
     run = True
@@ -322,10 +334,16 @@ def main():
                 camera.apply(sprite)
             for sprite in remain:
                 camera.apply(sprite)
+            for sprite in alien:
+                camera.apply(sprite)
+                sprite.check()
             all_sprites.draw(screen)
             main_.draw(screen)
             remain.draw(screen)
             remain.update(screen)
+            alien.draw(screen)
+            alien.update(screen)
+
             a.render(screen)
             hp.render(screen)
 
