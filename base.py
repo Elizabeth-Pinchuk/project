@@ -5,6 +5,7 @@ import time
 import BaseWindow
 import animations
 
+
 SIZE = WIDTH, HEIGHT = 600, 600
 
 all_sprites = pygame.sprite.Group()
@@ -15,7 +16,7 @@ remain = pygame.sprite.Group()
 base = pygame.sprite.Group()
 base_window = pygame.sprite.Group()
 base_button_w = pygame.sprite.Group()
-
+remains_sprites = []  # заполнить список pygame.image.load(адрес картинки с обломком)
 Level = BaseWindow.LEVEL
 REQUIREMENT = BaseWindow.REQUIREMENT
 WORLD_SIZE = 200
@@ -92,6 +93,31 @@ class WORLD:
             self.x = 0
             self.y += self.tile
 
+class NPC(pygame.sprite.Sprite):
+    def __init__(self, screen_width, screen_height, hero):
+        super().__init__()
+        self.image = pygame.image.load("npc.png") # Замените на своё изображение
+        self.rect = self.image.get_rect()
+        self.rect.x = random.randrange(0, screen_width - self.rect.width)
+        self.rect.y = random.randrange(0, screen_height - self.rect.height)
+        self.speed = 1
+        self.hero = hero
+
+    def update(self):
+        #движение к Hero
+        if self.rect.x < self.hero.rect.x:
+            self.rect.x += self.speed
+        if self.rect.x > self.hero.rect.x:
+            self.rect.x -= self.speed
+        if self.rect.y < self.hero.rect.y:
+            self.rect.y += self.speed
+        if self.rect.y > self.hero.rect.y:
+            self.rect.y -= self.speed
+
+        # Проверка столкновения и уменьшение HP героя
+        if self.rect.colliderect(self.hero.rect):
+            self.hero.hp -= 1
+
 
 class Hero(pygame.sprite.Sprite):
     def __init__(self, x, y, size, world, *group):
@@ -104,6 +130,7 @@ class Hero(pygame.sprite.Sprite):
         self.rect.y = y
         self.speed = HERO_SPEED
         self.world = world
+        self.attack = False
         self.running = False
         self.animations = {
             'walk_down': animations.Animation(x, y, 'sprites\\walk_down', size),
@@ -119,6 +146,12 @@ class Hero(pygame.sprite.Sprite):
         global In_Base
         keys_pressed = pygame.key.get_pressed()
         v_x, v_y = 0, 0
+        if keys_pressed[pygame.K_SPACE]:
+            self.attack = True
+            self.image = self.attack_image
+        else:
+            self.attack = False
+            self.image = pygame.image.load("hero.png")
         if keys_pressed[pygame.K_LSHIFT]:
             self.speed = HERO_SPEED * 1.5
             self.running = True
@@ -167,6 +200,7 @@ class Hero(pygame.sprite.Sprite):
         self.image = self.animations[f"walk_{self.direction}"].image
 
 
+
 Amount = 0
 
 
@@ -174,7 +208,7 @@ class Remains(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__(remain)
         self.image = pygame.Surface([20, 20])
-        self.image.fill('#752908')
+        self.image.fill('#752908')  # изменить на self.transform.scale((размер по х и у))
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = x, y
         self.k = False
@@ -223,7 +257,7 @@ class Air:
 
 class HP:
     def __init__(self):
-        self.hp = 200
+        self.hp = 2000
         self.h = 200
         self.m_hp = self.hp
 
