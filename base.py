@@ -96,7 +96,7 @@ class WORLD:
 class NPC(pygame.sprite.Sprite):
     def __init__(self, screen_width, screen_height, hero):
         super().__init__()
-        self.image = pygame.image.load("npc.png") # Замените на своё изображение
+        self.image = pygame.image.load("npc.png") # Заменить на своё изображение
         self.rect = self.image.get_rect()
         self.rect.x = random.randrange(0, screen_width - self.rect.width)
         self.rect.y = random.randrange(0, screen_height - self.rect.height)
