@@ -234,7 +234,8 @@ class Base(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__(all_sprites, base)
         self.image = pygame.Surface([50, 50])
-        self.image.fill('#ba3c06')  # pygame.transform.scale(изображение, (размер x, размер_y))
+        self.animation = animations.Animation(x, y, "sprites\\Base", (75, 75))
+        # self.image = pygame.transform.scale(изображение, (размер x, размер_y))
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = x, y
 
@@ -358,7 +359,7 @@ def main():
             RemBar = BaseWindow.Vertical_Bar(280, 230, screen,
                                              pygame.Color('white'), Amount, base_button_w)
             B_A = BaseWindow.Button_A((100, 140), 70, 230, base_button_w)
-            B_UP.update(a.oxygen, hp.hp, Amount)
+            B_UP.update(a.oxygen, hp.hp, Amount, Base)
             B_A.update(a.oxygen, a.m_oxygen)
             if B_A.u:
                 a.oxygen += B_A.u

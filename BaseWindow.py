@@ -33,7 +33,7 @@ class Button(pygame.sprite.Sprite):
         self.rect.x, self.rect.y = x, y
         self.up = 0
 
-    def update(self, ox, hp, a):
+    def update(self, ox, hp, a, base):
         global LEVEL
         if self.rect.x <= pygame.mouse.get_pos()[0] <= self.rect.x + self.sizes[0] and\
                 self.rect.y <= pygame.mouse.get_pos()[1] <= self.rect.y + self.sizes[1]:
@@ -41,9 +41,12 @@ class Button(pygame.sprite.Sprite):
             if pygame.mouse.get_pressed()[0] and a == (LEVEL - 1) + REQUIREMENT:
                 LEVEL += 1
                 self.up = 1
+                base.animation.update()
+                base.image = base.animation.image
         else:
             self.image.fill('#f3f707')
             self.up = 0
+
 
 
 
