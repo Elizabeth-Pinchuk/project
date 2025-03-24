@@ -240,21 +240,28 @@ class Base(pygame.sprite.Sprite):
         self.rect.x, self.rect.y = x, y
 
 class Npc_hp(pygame.sprite.Sprite):
-    def __init__(self, x, y, screen, level, cur_level, color, *group):
+    def __init__(self):
         super().__init__(*group)
-        self.image = pygame.Surface([50, 10], pygame.SRCALPHA)
-        self.rect = pygame.Rect(x, y, 50, 10)
-        self.x, self.y = x, y
-        self.color = color
-        self.screen = screen
-        if level:
-            self.current_level = 50 / level * cur_level
-        else:
-            self.current_level = 50
+        self.hp = 200
+        self.w = 200
+        self.m_hp = self.hp
 
-    def update(self):
-        pygame.draw.rect(self.screen, self.color, pygame.Rect(self.rect.x, self.rect.y, self.current_level, 10))
-        pygame.draw.rect(self.screen, (0, 0, 0), pygame.Rect(self.rect.x, self.rect.y, 50, 10), 10)
+    def __sub__(self, other):
+        self.hp -= other * 100
+        return self.hp
+
+    def render(self, screen):
+        if self.hp > 0:
+            if self.hp <= self.w:
+                pygame.draw.rect(screen, '#07db0e', pygame.Rect(70, 380, 40, self.hp))
+            else:
+                pygame.draw.rect(screen, '#07db0e', pygame.Rect(70, 380, 40, self.w))
+            pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(70, 380, 40, self.w), 7)
+        else:
+            pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(70, 380, 40, self.w))
+            pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(70, 380, 40, self.w), 7)
+        if self.hp > self.m_hp:
+            self.m_hp = self.hp
 
 
 class Air:

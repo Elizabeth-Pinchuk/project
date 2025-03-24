@@ -144,3 +144,20 @@ class Button_A(pygame.sprite.Sprite):
                     self.u = 0
         else:
             self.image.fill('#160582')
+
+class Npc_hp(pygame.sprite.Sprite):
+    def __init__(self, x, y, screen, level, cur_level, color, *group):
+        super().__init__(*group)
+        self.image = pygame.Surface([40, 5], pygame.SRCALPHA)
+        self.rect = pygame.Rect(x, y, 40, 5)
+        self.x, self.y = x, y
+        self.color = color
+        self.screen = screen
+        if level:
+            self.current_level = 40 / level * cur_level
+        else:
+            self.current_level = 40
+
+    def update(self):
+        pygame.draw.rect(self.screen, self.color, pygame.Rect(self.rect.x, self.rect.y, self.current_level, 5))
+        pygame.draw.rect(self.screen, (0, 0, 0), pygame.Rect(self.rect.x, self.rect.y, 40, 5), 3)
