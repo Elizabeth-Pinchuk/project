@@ -107,7 +107,7 @@ class NPC(pygame.sprite.Sprite):
         self.rect.y = y
         self.speed = 2
         self.hero = hero
-        self.hp = 0  # dfghj
+        self.hp = 100
 
     def move(self):
         if self.rect.x < self.hero.rect.x - 20:
@@ -123,7 +123,7 @@ class NPC(pygame.sprite.Sprite):
         if abs(self.rect.x - self.hero.rect.x) < 75 and abs(self.rect.x - self.hero.rect.x) < 75:
             self.move()
         if pygame.sprite.spritecollideany(self, main_):
-            self.hero.hp -= 1
+            self.hero.hp.hp -= 1
 
 
 class Hero(pygame.sprite.Sprite):
@@ -238,6 +238,23 @@ class Base(pygame.sprite.Sprite):
         # self.image = pygame.transform.scale(изображение, (размер x, размер_y))
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = x, y
+
+class Npc_hp(pygame.sprite.Sprite):
+    def __init__(self, x, y, screen, level, cur_level, color, *group):
+        super().__init__(*group)
+        self.image = pygame.Surface([50, 10], pygame.SRCALPHA)
+        self.rect = pygame.Rect(x, y, 50, 10)
+        self.x, self.y = x, y
+        self.color = color
+        self.screen = screen
+        if level:
+            self.current_level = 50 / level * cur_level
+        else:
+            self.current_level = 50
+
+    def update(self):
+        pygame.draw.rect(self.screen, self.color, pygame.Rect(self.rect.x, self.rect.y, self.current_level, 10))
+        pygame.draw.rect(self.screen, (0, 0, 0), pygame.Rect(self.rect.x, self.rect.y, 50, 10), 10)
 
 
 class Air:
