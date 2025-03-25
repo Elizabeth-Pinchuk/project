@@ -130,7 +130,7 @@ class NPC(pygame.sprite.Sprite):
         if self.rect.y > self.hero.rect.y - 20:
             self.rect.y -= self.speed * to_
 
-    def check(self):
+    def check(self, attack):
         if abs(self.rect.x - self.hero.rect.x) < 500 and abs(self.rect.y - self.hero.rect.y) < 500:
             self.move()
             self.animations[self.direction].is_on = True
@@ -141,10 +141,14 @@ class NPC(pygame.sprite.Sprite):
                     self.move(-10)
         if pygame.sprite.spritecollideany(self, main_):
             self.hero.hp.hp -= 1
-            self.attack = True
-            self.image = self.animations[f'attack_{self.direction}']
-        else:
-            self.attack = False
+            if attack:
+                self.hp -= 10
+                if self.hp <= 0:
+                    self.kill()
+            # self.attack = True
+            # self.image = self.animations[f'attack_{self.direction}']
+        # else:
+        #     self.attack = False
         # if self.attack:
         #     self.animations[f'attack_{self.direction}'].update()
         #     self.image = self.animations[f"attack_{self.direction}"].image
@@ -403,7 +407,7 @@ def main():
                 camera.apply(sprite)
             for sprite in alien:
                 camera.apply(sprite)
-                sprite.check()
+                sprite.check(hero.attack)
             all_sprites.draw(screen)
             main_.draw(screen)
             remain.draw(screen)
