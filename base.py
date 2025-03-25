@@ -91,7 +91,7 @@ class WORLD:
                     if row == 5:
                         if random.randint(0, 15) == 5:
                             remains = Remains(self.x + 10, self.y + 10)
-                        if random.randint(0, 10) == 5:
+                        if random.randint(0, 25) == 5:
                             npc = NPC(self.x, self.y, player, self.alien_sprites[0])
                     self.x += self.tile
                 else:
@@ -109,6 +109,7 @@ class NPC(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
         self.speed = 2
+        self.attack = False
         self.hero = hero
         self.hp = 100
         self.animations = {
@@ -140,11 +141,16 @@ class NPC(pygame.sprite.Sprite):
                     self.move(-10)
         if pygame.sprite.spritecollideany(self, main_):
             self.hero.hp.hp -= 1
-        # if abs(self.rect.x - self.hero.rect.x) == 0 and abs(self.rect.y - self.hero.rect.y) == 0:
-        #     self.attack = True
-        #     self.image = self.animations[f'attack_{self.direction}']
+            self.attack = True
+            self.image = self.animations[f'attack_{self.direction}']
+        else:
+            self.attack = False
+        # if self.attack:
+        #     self.animations[f'attack_{self.direction}'].update()
+        #     self.image = self.animations[f"attack_{self.direction}"].image
         # else:
-        #     self.attack = False
+        #     self.animations[f"walk_{self.direction}"].update()
+        #     self.image = self.animations[f"walk_{self.direction}"].image
 
 
 class Hero(pygame.sprite.Sprite):
@@ -271,6 +277,9 @@ class Base(pygame.sprite.Sprite):
         path = os.path.join('sprites', 'Base', image)
         if os.path.exists(path):
             self.image = pygame.image.load(path).convert_alpha()
+
+    def is_max_level(self):
+        return self.level >= 7
 
 class Npc_hp(pygame.sprite.Sprite):
     def __init__(self):
@@ -415,7 +424,7 @@ def main():
             RemBar = BaseWindow.Vertical_Bar(280, 230, screen,
                                              pygame.Color('white'), Amount, base_button_w)
             B_A = BaseWindow.Button_A((100, 140), 70, 230, base_button_w)
-            B_UP.update(a.oxygen, hp.hp, Amount, Base)
+            B_UP.update(a.oxygen, hp.hp, Amount, hero.base)
             B_A.update(a.oxygen, a.m_oxygen)
             if B_A.u:
                 a.oxygen += B_A.u
@@ -426,6 +435,10 @@ def main():
             base_window.draw(screen)
             base_button_w.draw(screen)
             Final_Button.update(Amount)
+            if hero.base.is_max_level():
+                run = False
+                f1 = pygame.font.Font(None, 90)
+                screen.blit(f1.render("YOU WIN!!!", False, '#00ff00'), (150, 100))
             if Final_Button.p:
                 run = False
             AirBar.update()
@@ -435,6 +448,7 @@ def main():
         pygame.display.flip()
         timer.tick(FPS)
     pygame.quit()
+    time.sleep(2)
 
 
 if __name__ == '__main__':
