@@ -17,6 +17,7 @@ base = pygame.sprite.Group()
 base_window = pygame.sprite.Group()
 base_button_w = pygame.sprite.Group()
 remains_sprites = [pygame.image.load(f'sprites\\remains\\{file}') for file in os.listdir("sprites\\remains")]
+# self.animation = animations.Animation(x, y, os.path.join('sprites', 'Base'), (75, 75)) **изменить по примеру
 rock_sprites = [pygame.image.load(f'sprites\\rocks\\{file}') for file in os.listdir("sprites\\rocks")]
 alien_spritesl = [pygame.image.load(f'sprites\\npc_walk_left\\{file}') for file in os.listdir("sprites\\npc_walk_left")]
 alien_spritesr = [pygame.image.load(f'sprites\\npc_walk_right\\{file}') for file in os.listdir("sprites\\npc_walk_right")]
@@ -62,6 +63,7 @@ class WORLD:
         self.world = 'Savings1'
         self.tile = 50
         self.tiles = [pygame.image.load("sprites\\floor_tile.png")]
+        #  self.animation = animations.Animation(x, y, os.path.join('sprites', 'Base'), (75, 75)) **изменить по примеру
         self.alien_sprites = alien_spritesl + alien_spritesr
         self.rock_tiles = rock_sprites
         self.Base_Activated = False
@@ -113,10 +115,10 @@ class NPC(pygame.sprite.Sprite):
         self.hero = hero
         self.hp = 100
         self.animations = {
-            'left':animations.Animation(x, y, 'sprites\\npc_walk_left', (30, 40)),
-            'right':animations.Animation(x, y, 'sprites\\npc_walk_right', (30, 40)),
-            # 'attack_left': animations.Animation(x, y, 'sprites\\npc_left_attack.png', (30, 40)),
-            # 'attack_right': animations.Animation(x, y, 'sprites\\npc_right_attack.png', (30, 40))
+            'left':animations.Animation(x, y, os.path.join('sprites', 'npc_walk_left'), (30, 40)),
+            'right':animations.Animation(x, y, os.path.join('sprites', 'npc_walk_right'), (30, 40)),
+            # 'attack_left': animations.Animation(x, y, os.path.join('sprites', 'npc_left_attack'), (30, 40)),
+            # 'attack_right': animations.Animation(x, y,os.path.join('sprites', 'npc_right_attack'), (30, 40))
         }
         self.direction = 'left'
 
@@ -172,10 +174,10 @@ class Hero(pygame.sprite.Sprite):
         self.attack = False
         self.running = False
         self.animations = {
-            'walk_right': animations.Animation(x, y, 'sprites\\walk_right', size),
-            'walk_left': animations.Animation(x, y, 'sprites\\walk_left', size),
-            'attack_left': animations.Animation(x, y, 'sprites\\attack_left', size),
-            'attack_right': animations.Animation(x, y, 'sprites\\attack_right', size)
+            'walk_right': animations.Animation(x, y, os.path.join('sprites', 'walk_right'), size),
+            'walk_left': animations.Animation(x, y, os.path.join('sprites', 'walk_left'), size),
+            'attack_left': animations.Animation(x, y, os.path.join('sprites', 'attack_left'), size),
+            'attack_right': animations.Animation(x, y, os.path.join('sprites', 'attack_right'), size)
         }
         self.direction = "left"
 
@@ -267,8 +269,6 @@ class Base(pygame.sprite.Sprite):
         self.image = pygame.Surface([50, 50])
         self.level = 1
         self.animation = animations.Animation(x, y, os.path.join('sprites', 'Base'), (75, 75))
-        # self.animation = animations.Animation(x, y, "sprites\\Base", (75, 75))
-        # self.image = pygame.transform.scale(изображение, (размер x, размер_y))
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = x, y
         self.update_image()
@@ -285,29 +285,29 @@ class Base(pygame.sprite.Sprite):
     def is_max_level(self):
         return self.level >= 7
 
-class Npc_hp(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__(*group)
-        self.hp = 200
-        self.w = 200
-        self.m_hp = self.hp
-
-    def __sub__(self, other):
-        self.hp -= other * 100
-        return self.hp
-
-    def render(self, screen):
-        if self.hp > 0:
-            if self.hp <= self.w:
-                pygame.draw.rect(screen, '#07db0e', pygame.Rect(70, 380, 40, self.hp))
-            else:
-                pygame.draw.rect(screen, '#07db0e', pygame.Rect(70, 380, 40, self.w))
-            pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(70, 380, 40, self.w), 7)
-        else:
-            pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(70, 380, 40, self.w))
-            pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(70, 380, 40, self.w), 7)
-        if self.hp > self.m_hp:
-            self.m_hp = self.hp
+#class Npc_hp(pygame.sprite.Sprite):
+    # def __init__(self):
+    #     super().__init__(*group)
+    #     self.hp = 200
+    #     self.w = 200
+    #     self.m_hp = self.hp
+    #
+    # def __sub__(self, other):
+    #     self.hp -= other * 100
+    #     return self.hp
+    #
+    # def render(self, screen):
+    #     if self.hp > 0:
+    #         if self.hp <= self.w:
+    #             pygame.draw.rect(screen, '#07db0e', pygame.Rect(70, 380, 40, self.hp))
+    #         else:
+    #             pygame.draw.rect(screen, '#07db0e', pygame.Rect(70, 380, 40, self.w))
+    #         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(70, 380, 40, self.w), 7)
+    #     else:
+    #         pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(70, 380, 40, self.w))
+    #         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(70, 380, 40, self.w), 7)
+    #     if self.hp > self.m_hp:
+    #         self.m_hp = self.hp
 
 
 class Air:

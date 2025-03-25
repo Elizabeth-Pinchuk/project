@@ -72,9 +72,8 @@ class RedButton(pygame.sprite.Sprite):
             pygame.draw.rect(self.screen, (0, 0, 0), pygame.Rect(self.rect.x, self.rect.y, 100, 100), 10)
             pygame.draw.circle(self.screen, '#ad2d1c', (self.x + 50, self.y + 50), 30)
             pygame.draw.circle(self.screen, (0, 0, 0), (self.x + 50, self.y + 50), 30, 6)
-            if pygame.mouse.get_pressed()[0]:#ПОКА БЕЗ УСЛОВИЯ
+            if pygame.mouse.get_pressed()[0]:
                 self.p = True
-            #надпись YOU WIN!
         else:
             pygame.draw.rect(self.screen, '#eda007', pygame.Rect(self.rect.x, self.rect.y, 100, 100))
             pygame.draw.rect(self.screen, (0, 0, 0), pygame.Rect(self.rect.x, self.rect.y, 100, 100), 10)
