@@ -18,6 +18,8 @@ base_window = pygame.sprite.Group()
 base_button_w = pygame.sprite.Group()
 remains_sprites = [pygame.image.load(f'sprites\\remains\\{file}') for file in os.listdir("sprites\\remains")]
 rock_sprites = [pygame.image.load(f'sprites\\rocks\\{file}') for file in os.listdir("sprites\\rocks")]
+alien_spritesl = [pygame.image.load(f'sprites\\npc_walk_left\\{file}') for file in os.listdir("sprites\\npc_walk_left")]
+alien_spritesr = [pygame.image.load(f'sprites\\npc_walk_right\\{file}') for file in os.listdir("sprites\\npc_walk_right")]
 Level = BaseWindow.LEVEL
 REQUIREMENT = BaseWindow.REQUIREMENT
 WORLD_SIZE = 200
@@ -60,6 +62,7 @@ class WORLD:
         self.world = 'Savings1'
         self.tile = 50
         self.tiles = [pygame.image.load("sprites\\floor_tile.png")]
+        self.alien_sprites = alien_spritesl + alien_spritesr
         self.rock_tiles = rock_sprites
         self.Base_Activated = False
 
@@ -89,7 +92,7 @@ class WORLD:
                         if random.randint(0, 15) == 5:
                             remains = Remains(self.x + 10, self.y + 10)
                         if random.randint(0, 10) == 5:
-                            npc = NPC(self.x, self.y, player)
+                            npc = NPC(self.x, self.y, player, self.alien_sprites[0])
                     self.x += self.tile
                 else:
                     Tile((self.tile, self.tile), random.choice(self.rock_tiles), self.x, self.y, False, all_sprites)
@@ -99,31 +102,49 @@ class WORLD:
 
 
 class NPC(pygame.sprite.Sprite):
-    def __init__(self, x, y, hero):
+    def __init__(self, x, y, hero, sprite):
         super().__init__(alien)
-        self.image = pygame.image.load("sprites\\walk_left\\1_left.png")
+        self.image = pygame.transform.scale(sprite, (30, 40))
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
         self.speed = 2
         self.hero = hero
         self.hp = 100
+        self.animations = {
+            'left':animations.Animation(x, y, 'sprites\\npc_walk_left', (30, 40)),
+            'right':animations.Animation(x, y, 'sprites\\npc_walk_right', (30, 40)),
+            # 'attack_left': animations.Animation(x, y, 'sprites\\npc_left_attack.png', (30, 40)),
+            # 'attack_right': animations.Animation(x, y, 'sprites\\npc_right_attack.png', (30, 40))
+        }
+        self.direction = 'left'
 
-    def move(self):
+    def move(self, to_ = 1):
         if self.rect.x < self.hero.rect.x - 20:
-            self.rect.x += self.speed
+            self.rect.x += self.speed * to_
         if self.rect.x > self.hero.rect.x - 20:
-            self.rect.x -= self.speed
+            self.rect.x -= self.speed * to_
         if self.rect.y < self.hero.rect.y - 20:
-            self.rect.y += self.speed
+            self.rect.y += self.speed * to_
         if self.rect.y > self.hero.rect.y - 20:
-            self.rect.y -= self.speed
+            self.rect.y -= self.speed * to_
 
     def check(self):
-        if abs(self.rect.x - self.hero.rect.x) < 75 and abs(self.rect.x - self.hero.rect.x) < 75:
+        if abs(self.rect.x - self.hero.rect.x) < 500 and abs(self.rect.y - self.hero.rect.y) < 500:
             self.move()
+            self.animations[self.direction].is_on = True
+            self.animations[self.direction].update()
+            self.image = self.animations[self.direction].image
+            if pygame.sprite.spritecollideany(self, water_tiles_group):
+                while pygame.sprite.spritecollideany(self, water_tiles_group):
+                    self.move(-10)
         if pygame.sprite.spritecollideany(self, main_):
             self.hero.hp.hp -= 1
+        # if abs(self.rect.x - self.hero.rect.x) == 0 and abs(self.rect.y - self.hero.rect.y) == 0:
+        #     self.attack = True
+        #     self.image = self.animations[f'attack_{self.direction}']
+        # else:
+        #     self.attack = False
 
 
 class Hero(pygame.sprite.Sprite):
@@ -234,10 +255,22 @@ class Base(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__(all_sprites, base)
         self.image = pygame.Surface([50, 50])
-        self.animation = animations.Animation(x, y, "sprites\\Base", (75, 75))
+        self.level = 1
+        self.animation = animations.Animation(x, y, os.path.join('sprites', 'Base'), (75, 75))
+        # self.animation = animations.Animation(x, y, "sprites\\Base", (75, 75))
         # self.image = pygame.transform.scale(изображение, (размер x, размер_y))
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = x, y
+        self.update_image()
+
+    def update(self):
+        self.update_image()
+
+    def update_image(self):
+        image = f'{self.level}_sheep.png'
+        path = os.path.join('sprites', 'Base', image)
+        if os.path.exists(path):
+            self.image = pygame.image.load(path).convert_alpha()
 
 class Npc_hp(pygame.sprite.Sprite):
     def __init__(self):
@@ -368,7 +401,6 @@ def main():
             remain.update(screen)
             alien.draw(screen)
             alien.update(screen)
-
             a.render(screen)
             hp.render(screen)
 

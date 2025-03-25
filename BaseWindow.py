@@ -41,8 +41,10 @@ class Button(pygame.sprite.Sprite):
             if pygame.mouse.get_pressed()[0] and a == (LEVEL - 1) + REQUIREMENT:
                 LEVEL += 1
                 self.up = 1
-                base.animation.update()
-                base.image = base.animation.image
+                # base.animation.update()
+                # base.image = base.animation.image
+                base.level = LEVEL
+                base.update()
         else:
             self.image.fill('#f3f707')
             self.up = 0
@@ -70,8 +72,9 @@ class RedButton(pygame.sprite.Sprite):
             pygame.draw.rect(self.screen, (0, 0, 0), pygame.Rect(self.rect.x, self.rect.y, 100, 100), 10)
             pygame.draw.circle(self.screen, '#ad2d1c', (self.x + 50, self.y + 50), 30)
             pygame.draw.circle(self.screen, (0, 0, 0), (self.x + 50, self.y + 50), 30, 6)
-            if pygame.mouse.get_pressed()[0] or (a >= 10 and LEVEL >= 3):#ПОКА БЕЗ УСЛОВИЯ
+            if pygame.mouse.get_pressed()[0] or (a >= 1 and LEVEL >= 1):#ПОКА БЕЗ УСЛОВИЯ
                 self.p = True
+            #надпись YOU WIN!
         else:
             pygame.draw.rect(self.screen, '#eda007', pygame.Rect(self.rect.x, self.rect.y, 100, 100))
             pygame.draw.rect(self.screen, (0, 0, 0), pygame.Rect(self.rect.x, self.rect.y, 100, 100), 10)
