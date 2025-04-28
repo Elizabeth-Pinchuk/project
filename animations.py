@@ -21,4 +21,4 @@ class Animation(pygame.sprite.Sprite):
 
     def load_sprites(self, path):
         for file in os.listdir(path):
-            self.sprites.append(pygame.image.load(path + '\\' + file))
+            self.sprites.append(pygame.image.load(path + '/' + file))

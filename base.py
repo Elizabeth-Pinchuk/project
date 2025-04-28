@@ -18,17 +18,12 @@ base_window = pygame.sprite.Group()
 base_button_w = pygame.sprite.Group()
 remains_sprites = [pygame.image.load(os.path.join('sprites', 'remains', file))
                      for file in os.listdir(os.path.join("sprites", "remains"))]
-#remains_sprites = [pygame.image.load(f'sprites\\remains\\{file}') for file in os.listdir("sprites\\remains")]
-#self.animation = animations.Animation(x, y, os.path.join('sprites', 'Base'), (75, 75)) #**изменить по примеру
 rock_sprites = [pygame.image.load(os.path.join('sprites', 'rocks', file))
                   for file in os.listdir(os.path.join("sprites", "rocks"))]
-#rock_sprites = [pygame.image.load(f'sprites\\rocks\\{file}') for file in os.listdir("sprites\\rocks")]
 alien_spritesl = [pygame.image.load(os.path.join('sprites', 'npc_walk_left', file))
                     for file in os.listdir(os.path.join("sprites", "npc_walk_left"))]
-#alien_spritesl = [pygame.image.load(f'sprites\\npc_walk_left\\{file}') for file in os.listdir("sprites\\npc_walk_left")]
 alien_spritesr = [pygame.image.load(os.path.join('sprites', 'npc_walk_right', file))
                     for file in os.listdir(os.path.join("sprites", "npc_walk_right"))]
-#alien_spritesr = [pygame.image.load(f'sprites\\npc_walk_right\\{file}') for file in os.listdir("sprites\\npc_walk_right")]
 Level = BaseWindow.LEVEL
 REQUIREMENT = BaseWindow.REQUIREMENT
 WORLD_SIZE = 200
@@ -71,8 +66,6 @@ class WORLD:
         self.world = 'Savings1'
         self.tile = 50
         self.tiles = [pygame.image.load(os.path.join("sprites", "floor_tile.png"))]
-        #self.tiles = [pygame.image.load("sprites\\floor_tile.png")]
-        #  self.animation = animations.Animation(x, y, os.path.join('sprites', 'Base'), (75, 75)) **изменить по примеру
         self.alien_sprites = alien_spritesl + alien_spritesr
         self.rock_tiles = rock_sprites
         self.Base_Activated = False
@@ -156,16 +149,6 @@ class NPC(pygame.sprite.Sprite):
                 self.hp -= 10
                 if self.hp <= 0:
                     self.kill()
-            # self.attack = True
-            # self.image = self.animations[f'attack_{self.direction}']
-        # else:
-        #     self.attack = False
-        # if self.attack:
-        #     self.animations[f'attack_{self.direction}'].update()
-        #     self.image = self.animations[f"attack_{self.direction}"].image
-        # else:
-        #     self.animations[f"walk_{self.direction}"].update()
-        #     self.image = self.animations[f"walk_{self.direction}"].image
 
 
 class Hero(pygame.sprite.Sprite):
@@ -229,11 +212,6 @@ class Hero(pygame.sprite.Sprite):
 
     def move(self, v_x, v_y):
         self.rect = self.rect.move(v_x * self.speed, v_y * self.speed)
-        # if pygame.sprite.spritecollideany(self, tiles_group):
-        #     while not pygame.sprite.spritecollideany(self, tiles_group):
-        #         self.rect = self.rect.move(-1 * v_x, -1 * v_y)
-        # else:
-        #     self.rect = self.rect.move(-2 * v_x * self.speed, -2 * v_y * self.speed)
         if pygame.sprite.spritecollideany(self, water_tiles_group):
             while pygame.sprite.spritecollideany(self, water_tiles_group):
                 self.rect = self.rect.move(-1 * v_x, -1 * v_y)
